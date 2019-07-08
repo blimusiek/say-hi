@@ -1,5 +1,4 @@
 (ns say-hi.core
-  (:import goog.object)
   (:require [reagent.core :as r]))
 
 (enable-console-print!)
@@ -14,24 +13,26 @@
 
 (defn get-bcr [el]
   (-> el
-      r/dom-node
       .getBoundingClientRect))
+
+(defn set-ref! [!ref]
+  (fn [el]
+    (if (and el (not (identical? el @!ref))) (reset! !ref el))))
 
 (defn office-plan [employees]
   (let [!wrapper (r/atom nil)]
-    (prn @!wrapper) ;; something is no yes
-    [:div.office-plan-wrapper {:ref (fn [el]
-                                      (if-not (.is goog.object el @!wrapper) (reset! !wrapper el)))}
-     (if @!wrapper [(let [wrapper @!wrapper]
-                      (map (fn [emp]
-                             (let [pos (:position emp)
-                                   [pos-x pos-y] pos
-                                   bcr (get-bcr wrapper)
-                                   w (:width bcr)
-                                   h (:height bcr)
-                                   x (/ (* w pos-x) 100)
-                                   y (/ (* h pos-y) 100)]
-                               [marker [x y]])) employees))])]))
+    (fn []
+      [:div.office-plan-wrapper {:ref (set-ref! !wrapper)}
+       (if-let [wrapper @!wrapper]
+         (for [emp employees]
+           (let [pos (:position emp)
+                 [pos-x pos-y] pos
+                 bcr (get-bcr wrapper)
+                 w (.-width bcr)
+                 h (.-height bcr)
+                 x (/ (* w pos-x) 100)
+                 y (/ (* h pos-y) 100)]
+             ^{:key emp} [marker [x y]])))])))
 
 (defn app []
   (let [employees (get @state :employees)]
