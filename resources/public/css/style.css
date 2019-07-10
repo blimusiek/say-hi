@@ -32,7 +32,11 @@ main {
 }
 
 .marker {
-    width: 10px;
-    height: 10px;
     background: red;
+}
+
+.marker-details {
+    position: absolute;
+    left: 15px;
+    width: 200px;
 }

@@ -3,13 +3,30 @@
 
 (enable-console-print!)
 
-(defonce state (r/atom {:employees [{:name "Maciek Blim" :position [23 45]}
-                                    {:name "Piotrek Łukomiak" :position [56 76]}]}))
+(defonce state (r/atom {:employees [{:name "Maciek Blim" :position [23 45] :project "Vizi"}
+                                    {:name "Piotrek Łukomiak" :position [56 76] :project "Vizi"}]}))
 
-(defn marker [[x y]]
-  [:div.marker {:style {:position "absolute"
-                        :top (str y "px")
-                        :left (str x "px")}}])
+
+(defn marker-details [{name :name
+                       project :project}]
+  [:div.marker-details [:div name] [:div project]])
+
+(defn marker [{x :x y :y info :info}]
+  (let [!over (r/atom false)]
+    (fn []
+      (let [size 10
+            half-size (/ size 2)
+            top (str (- y half-size) "px")
+            left (str (- x half-size) "px")
+            size-px (str size "px")]
+        [:div.marker {:style {:position "absolute"
+                              :top top
+                              :left left
+                              :height size-px
+                              :width size-px}
+                      :on-mouse-over (fn [] (reset! !over true))
+                      :on-mouse-out (fn [] (reset! !over false))}
+         (if @!over [marker-details info])]))))
 
 (defn get-bcr [el]
   (-> el
@@ -31,8 +48,13 @@
                  w (.-width bcr)
                  h (.-height bcr)
                  x (/ (* w pos-x) 100)
-                 y (/ (* h pos-y) 100)]
-             ^{:key emp} [marker [x y]])))])))
+                 y (/ (* h pos-y) 100)
+                 name (:name emp)
+                 project (:project emp)]
+             ^{:key emp} [marker {:x x :y y :info {:name name
+                                                   :project project}}])))])))
+
+
 
 (defn app []
   (let [employees (get @state :employees)]
@@ -43,8 +65,8 @@
 (r/render-component [app]
                     (. js/document (getElementById "app")))
 
-(defn on-js-reload []
+(defn on-js-reload [])
   ;; optionally touch your app-state to force rerendering depending on
   ;; your application
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
-  )
+
