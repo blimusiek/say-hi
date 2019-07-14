@@ -1,3 +1,6 @@
+html {
+    font-size: 16px;
+}
 body,
 #app {
     width: 100vw;
@@ -26,6 +29,7 @@ main {
 }
 
 .office-plan-wrapper {
+    box-sizing: border-box;
     position: relative;
     height: 100%;
     width: 100%;
@@ -39,4 +43,27 @@ main {
     position: absolute;
     left: 15px;
     width: 200px;
+}
+
+.employee-search {
+    box-sizing: border-box;
+    width: 100%;
+    padding-bottom: 8px;
+}
+
+.employee-search input {
+    width: 100%;
+}
+
+.employees-list-item {
+    width: 100%;
+    padding: 4px;
+}
+
+.employees-list-item-label {
+    font-size: 1rem;
+}
+
+.employees-list-item-legend {
+    font-size: 0.8rem;
 }

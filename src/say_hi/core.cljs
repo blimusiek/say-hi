@@ -54,13 +54,23 @@
              ^{:key emp} [marker {:x x :y y :info {:name name
                                                    :project project}}])))])))
 
+(defn employee-list [employees]
+  [:div.employees-list (for [emp employees]
+                         (let [name (:name emp)
+                               project (:project emp)]
+                           ^{:key emp} [:div.employees-list-item [:div.employees-list-item-label name]
+                                        [:div.employees-list-item-legend project]]))])
+
+(defn employee-search [on-search]
+  [:div.employee-search [:input {:type "text"
+                                 :on-change (fn [e] (on-search (-> e .-target .-value)))}]])
 
 
 (defn app []
   (let [employees (get @state :employees)]
     [:main
      [:section.content [office-plan employees]]
-     [:aside.sidebar "List search projects itp .."]]))
+     [:aside.sidebar [employee-search (fn [query] (prn query))] [employee-list employees]]]))
 
 (r/render-component [app]
                     (. js/document (getElementById "app")))
