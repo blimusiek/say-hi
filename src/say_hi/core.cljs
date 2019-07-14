@@ -3,6 +3,7 @@
 
 (enable-console-print!)
 
+;; TODO get rid of this atom
 (defonce state (r/atom {:employees [{:name "Maciek Blim" :position [23 45] :project "Vizi"}
                                     {:name "Piotrek Łukomiak" :position [56 76] :project "Vizi"}]}))
 
@@ -65,12 +66,21 @@
   [:div.employee-search [:input {:type "text"
                                  :on-change (fn [e] (on-search (-> e .-target .-value)))}]])
 
+(defn search [query item])
 
 (defn app []
-  (let [employees (get @state :employees)]
-    [:main
-     [:section.content [office-plan employees]]
-     [:aside.sidebar [employee-search (fn [query] (prn query))] [employee-list employees]]]))
+  (let [employees (get @state :employees)
+        !query (r/atom "")]
+    (fn []
+      (let [emps (map (fn [emp]
+                        (let [name (:name emp)
+                              project (:project emp)
+                              pattern (re-pattern (str "(?i)" @!query))]
+                          (assoc emp :found (or (re-find pattern name) (re-find pattern project))))) employees)]
+        (prn emps)
+        [:main
+         [:section.content [office-plan emps]]
+         [:aside.sidebar [employee-search (fn [query] (reset! !query query))] [employee-list emps]]]))))
 
 (r/render-component [app]
                     (. js/document (getElementById "app")))
