@@ -12,7 +12,7 @@
   [:div.marker-details [:div name] [:div project]])
 
 (defn marker [{x :x y :y info :info}]
-  (let [!over (r/atom false)]
+  (let [!is-mouse-over (r/atom false)]
     (fn []
       (let [size 10
             half-size (/ size 2)
@@ -24,9 +24,9 @@
                               :left left
                               :height size-px
                               :width size-px}
-                      :on-mouse-over (fn [] (reset! !over true))
-                      :on-mouse-out (fn [] (reset! !over false))}
-         (if @!over [marker-details info])]))))
+                      :on-mouse-over (fn [] (reset! !is-mouse-over true))
+                      :on-mouse-out (fn [] (reset! !is-mouse-over false))}
+         (if @!is-mouse-over [marker-details info])]))))
 
 (defn get-bcr [el]
   (-> el
