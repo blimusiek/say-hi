@@ -1,5 +1,7 @@
 (ns say-hi.core
-  (:require [reagent.core :as r]))
+  (:require [reagent.core :as r]
+            [cljs.core.async :refer [chan sliding-buffer timeout]]
+            [cljs.core.async :refer-macros [go alt!]]))
 
 (enable-console-print!)
 
@@ -62,11 +64,22 @@
                            ^{:key emp} [:div.employees-list-item [:div.employees-list-item-label name]
                                         [:div.employees-list-item-legend project]]))])
 
-(defn employee-search [on-search]
-  [:div.employee-search [:input {:type "text"
-                                 :on-change (fn [e] (on-search (-> e .-target .-value)))}]])
+;; TODO
+(defn debounce [f ms]
+  (let [out (chan (sliding-buffer 1))]
+    (fn [val]
+      (go
+        ;; (>! out val)
+        (alt!
+          (timeout ms) ([] (f (<! out)))
+          out)))))
 
-(defn search [query item])
+(defn employee-search [on-search]
+  (let [on-change (debounce (fn [q] (on-search q)) 1000)]
+    (fn []
+      [:div.employee-search [:input {:type "text"
+                                     :on-change (fn [e] (on-change (-> e .-target .-value)))}]])))
+
 
 (defn app []
   (let [employees (get @state :employees)
@@ -77,10 +90,9 @@
                               project (:project emp)
                               pattern (re-pattern (str "(?i)" @!query))]
                           (assoc emp :found (or (re-find pattern name) (re-find pattern project))))) employees)]
-        (prn emps)
         [:main
          [:section.content [office-plan emps]]
-         [:aside.sidebar [employee-search (fn [query] (reset! !query query))] [employee-list emps]]]))))
+         [:aside.sidebar [employee-search (fn [query] (prn query) (reset! !query query))] [employee-list emps]]]))))
 
 (r/render-component [app]
                     (. js/document (getElementById "app")))
