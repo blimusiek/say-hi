@@ -1,7 +1,7 @@
 (ns say-hi.core
   (:require [reagent.core :as r]
-            [cljs.core.async :refer [chan sliding-buffer timeout]]
-            [cljs.core.async :refer-macros [go alt!]]))
+            [cljs.core.async :refer [chan sliding-buffer timeout tap mult]]
+            [cljs.core.async :refer-macros [go go-loop alt!]]))
 
 (enable-console-print!)
 
@@ -64,22 +64,28 @@
                            ^{:key emp} [:div.employees-list-item [:div.employees-list-item-label name]
                                         [:div.employees-list-item-legend project]]))])
 
-;; TODO
+;; It seems to be working
+;; Is it good? Is it ugly?
 (defn debounce [f ms]
-  (let [out (chan (sliding-buffer 1))]
+  (let [lock (chan (sliding-buffer 1))
+        stop (chan (sliding-buffer 1))]
+    (go-loop [prev-lock nil]
+      (when-let [new-lock (<! lock)]
+        (if prev-lock (>! prev-lock :stop))
+        (recur new-lock)))
     (fn [val]
-      (go
-        ;; (>! out val)
-        (alt!
-          (timeout ms) ([] (f (<! out)))
-          out)))))
+      (let [stop-chan (chan 1)]
+        (go
+          (>! lock stop-chan)
+          (alt!
+            (timeout ms) ([] (do (prn val "resolved") (f val)))
+            (tap (mult stop) stop-chan) ([v] (prn val "blocked"))))))))
 
 (defn employee-search [on-search]
   (let [on-change (debounce (fn [q] (on-search q)) 1000)]
     (fn []
       [:div.employee-search [:input {:type "text"
                                      :on-change (fn [e] (on-change (-> e .-target .-value)))}]])))
-
 
 (defn app []
   (let [employees (get @state :employees)
