@@ -1,23 +1,29 @@
+html {
+    font-size: 16px;
+}
 body,
 #app {
+    box-sizing: border-box;
     width: 100vw;
     height: 100vh;
 }
 
 main {
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
     display: flex;
 }
 
 .content {
+    box-sizing: border-box;
     flex: 1;
     width: 100%;
     height: 100%;
-    background: lightblue;
 }
 
 .sidebar {
+    box-sizing: border-box;
     flex: 0 1 300px;
     width: 100%;
     height: 100%;
@@ -26,17 +32,51 @@ main {
 }
 
 .office-plan-wrapper {
+    box-sizing: border-box;
     position: relative;
     height: 100%;
     width: 100%;
 }
 
 .marker {
+    background: blue;
+}
+.marker.searched-and-found {
+    background: green;
+}
+.marker.searched-and-not-found {
     background: red;
+    opacity: 0.5;
 }
 
 .marker-details {
     position: absolute;
     left: 15px;
     width: 200px;
+}
+
+.employee-search {
+    box-sizing: border-box;
+    width: 100%;
+    padding-bottom: 8px;
+}
+
+.employee-search input {
+    width: 100%;
+}
+
+.employees-list-item {
+    width: 100%;
+    padding: 4px;
+}
+.employees-list-item.searched-and-not-found {
+    opacity: 0.5;
+}
+
+.employees-list-item-label {
+    font-size: 1rem;
+}
+
+.employees-list-item-legend {
+    font-size: 0.8rem;
 }
