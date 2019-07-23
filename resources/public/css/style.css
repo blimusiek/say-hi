@@ -80,3 +80,11 @@ main {
 .employees-list-item-legend {
     font-size: 0.8rem;
 }
+
+strong {
+  font-weight: bold;
+}
+
+.highlight-match strong {
+  color: red;
+}

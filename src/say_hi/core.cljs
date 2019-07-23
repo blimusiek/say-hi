@@ -1,6 +1,6 @@
 (ns say-hi.core
   (:require [reagent.core :as r]
-            [clojure.string :refer [blank?]]
+            [clojure.string :refer [blank? split]]
             [cljs.core.async :refer [chan sliding-buffer timeout tap mult offer!]]
             [cljs.core.async :refer-macros [go go-loop alt!]]))
 
@@ -29,8 +29,8 @@
          (go
            (offer! lock stop-chan)
            (alt!
-             (timeout ms) ([] (do (prn val "resolved") (f val)))
-             (tap (mult stop) stop-chan) ([] (prn val "blocked")))))))))
+             (timeout ms) ([] (f val))
+             (tap (mult stop) stop-chan) ([]))))))))
 
 
 (defn marker-details [{name :name
@@ -84,15 +84,28 @@
                  y (/ (* h pos-y) 100)]
              ^{:key emp} [marker {:x x :y y :info emp}])))])))
 
+;; TODO what if match end
+(defn highlight [match text]
+  (if (nil? match)
+    text
+    (loop [remaining (split text (re-pattern (str "(?i)" match)))
+           final [:span.highlight-match]]
+      (if (= (count remaining) 1)
+        (conj final (first remaining))
+        (let [[part & rest] remaining]
+          (recur rest
+                 (conj final part [:strong match])))))))
+
 ;; TODO sort over found
-;; TODO higlight match
-;; TODO click higlight coresponding marker
+;; TODO click highlight coresponding marker
 (defn employee-list [employees]
   [:div.employees-list (for [emp employees]
-                         (let [name (:name emp)
-                               project (:project emp)]
-                           ^{:key emp} [:div.employees-list-item {:class (search-class-names emp)} [:div.employees-list-item-label name]
-                                        [:div.employees-list-item-legend project]]))])
+                         (let [{:keys [name project found]} emp
+                               highlighted-name (highlight found name)
+                               highlighted-project (highlight found project)]
+                           ^{:key emp} [:div.employees-list-item {:class (search-class-names emp)}
+                                        [:div.employees-list-item-label highlighted-name]
+                                        [:div.employees-list-item-legend highlighted-project]]))])
 
 (defn employee-search [on-search]
   (let [on-change (debounce (fn [q] (on-search q)))]
