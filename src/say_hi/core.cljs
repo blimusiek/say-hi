@@ -84,17 +84,13 @@
                  y (/ (* h pos-y) 100)]
              ^{:key emp} [marker {:x x :y y :info emp}])))])))
 
-;; TODO what if match end
 (defn highlight [match text]
   (if (nil? match)
     text
-    (loop [remaining (split text (re-pattern (str "(?i)" match)))
-           final [:span.highlight-match]]
-      (if (= (count remaining) 1)
-        (conj final (first remaining))
-        (let [[part & rest] remaining]
-          (recur rest
-                 (conj final part [:strong match])))))))
+    (let [parts (split (str text " ") (re-pattern (str "(?i)" match)))
+          highlights (filter (fn [s] (not (blank? s)))
+                             (interpose [:strong match] parts))]
+      [:span.highlight-match highlights])))
 
 ;; TODO sort over found
 ;; TODO click highlight coresponding marker
