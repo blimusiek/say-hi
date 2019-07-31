@@ -11,9 +11,6 @@
 
 (def timeout-ms 400)
 
-;; It seems to be working
-;; Is it good? Is it ugly?
-;; Is it a proper way to solve that kind of problems in cljs/clj?
 (defn debounce
   ([f]
    (debounce f timeout-ms))
@@ -44,23 +41,20 @@
         (if is-found "searched-and-found" "searched-and-not-found")))))
 
 ;; TODO animation of size on find
-(defn marker [{x :x y :y info :info}]
+(defn marker [employee]
   (let [!is-mouse-over (r/atom false)]
     (fn []
-      (let [size 10
-            half-size (/ size 2)
-            top (str (- y half-size) "px")
-            left (str (- x half-size) "px")
-            size-px (str size "px")]
+      (let [{position :position} employee
+            [x y] position
+            left (str x "%")
+            top (str y "%")]
         [:div.marker {:style {:position "absolute"
                               :top top
-                              :left left
-                              :height size-px
-                              :width size-px}
-                      :class (search-class-names info)
-                      :on-mouse-over (fn [] (reset! !is-mouse-over true))
-                      :on-mouse-out (fn [] (reset! !is-mouse-over false))}
-         (if @!is-mouse-over [marker-details info])]))))
+                              :left left}}
+         [:div.marker-content {:class (search-class-names employee)
+                               :on-mouse-over (fn [] (reset! !is-mouse-over true))
+                               :on-mouse-out (fn [] (reset! !is-mouse-over false))}
+          (if @!is-mouse-over [marker-details employee])]]))))
 
 (defn get-bcr [el]
   (-> el
@@ -76,13 +70,7 @@
       [:div.office-plan-wrapper {:ref (set-ref! !wrapper)}
        (if-let [wrapper @!wrapper]
          (for [emp employees]
-           (let [{:keys [name project] [pos-x pos-y] :position} emp
-                 bcr (get-bcr wrapper)
-                 w (.-width bcr)
-                 h (.-height bcr)
-                 x (/ (* w pos-x) 100)
-                 y (/ (* h pos-y) 100)]
-             ^{:key emp} [marker {:x x :y y :info emp}])))])))
+           ^{:key emp} [marker emp]))])))
 
 (defn highlight [match text]
   (if (nil? match)
