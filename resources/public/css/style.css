@@ -38,20 +38,29 @@ main {
     width: 100%;
 }
 
-.marker {
+.marker-content {
     background: blue;
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
+    width: 10px;
+    height: 10px;
+    transition: all 500ms cubic-bezier(.47,1.64,.41,.8);
 }
-.marker.searched-and-found {
+.marker-content.searched-and-found {
     background: green;
+    width: 20px;
+    height: 20px;
+
 }
-.marker.searched-and-not-found {
+.marker-content.searched-and-not-found {
     background: red;
     opacity: 0.5;
 }
 
 .marker-details {
     position: absolute;
-    left: 15px;
+    left: 20px;
     width: 200px;
 }
 
@@ -79,4 +88,12 @@ main {
 
 .employees-list-item-legend {
     font-size: 0.8rem;
+}
+
+strong {
+    font-weight: bold;
+}
+
+.highlight-match strong {
+    color: red;
 }
